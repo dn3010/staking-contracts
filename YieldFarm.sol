@@ -14,7 +14,7 @@ contract YieldFarm {
     // constants
     uint256 public constant TOTAL_DISTRIBUTED_AMOUNT = 62_500_000;
     uint256 public constant NR_OF_EPOCHS = 25;
-    uint128 public constant EPOCHS_DELAYED_FROM_STAKING_CONTRACT = 1;
+    uint128 public constant EPOCHS_DELAYED_FROM_STAKING_CONTRACT = 0;
 
     // addreses
     address private _lpTokenAddress;
