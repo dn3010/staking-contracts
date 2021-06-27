@@ -12,28 +12,24 @@ contract YieldFarm {
     using SafeMath for uint128;
 
     // constants
-    // 2.5% on incentivisation pool for each pool
-    uint256 public constant TOTAL_DISTRIBUTED_AMOUNT = 10_000_000;
-    // Needs to be equal community vualt if
-    // Run for 50 weeks
-    uint256 public constant NR_OF_EPOCHS = 50;
-    uint128 public constant EPOCHS_DELAYED_FROM_STAKING_CONTRACT = 0;
-
-    // state variables
+    uint256 public constant TOTAL_DISTRIBUTED_AMOUNT = 62_500_000;
+    uint256 public constant NR_OF_EPOCHS = 25;
+    uint128 public constant EPOCHS_DELAYED_FROM_STAKING_CONTRACT = 1;
 
     // addreses
     address private _lpTokenAddress;
-    address private _communityVault; //TODO: need to confirm where are the token minted to for now
+    address private _communityVault;
+
     // contracts
-    IERC20 private _plug;
+    IERC20 private _sylo;
     IStaking private _staking;
 
     uint256[] private epochs = new uint256[](NR_OF_EPOCHS + 1);
     uint256 private _totalAmountPerEpoch;
     uint128 public lastInitializedEpoch;
     mapping(address => uint128) private lastEpochIdHarvested;
-    uint256 public epochDuration; // init from staking contract
-    uint256 public epochStart; // init from staking contract
+    uint256 public epochDuration;
+    uint256 public epochStart;
 
     // events
     event MassHarvest(
@@ -54,7 +50,7 @@ contract YieldFarm {
         address stakeContract,
         address communityVault
     ) public {
-        _plug = IERC20(syloTokenAddress);
+        _sylo = IERC20(syloTokenAddress);
         _lpTokenAddress = lpTokenAddress;
         _staking = IStaking(stakeContract);
         _communityVault = communityVault;
@@ -95,7 +91,7 @@ contract YieldFarm {
         );
 
         if (totalDistributedValue > 0) {
-            _plug.transferFrom(
+            _sylo.transferFrom(
                 _communityVault,
                 msg.sender,
                 totalDistributedValue
@@ -115,7 +111,7 @@ contract YieldFarm {
         );
         uint256 userReward = _harvest(epochId);
         if (userReward > 0) {
-            _plug.transferFrom(_communityVault, msg.sender, userReward);
+            _sylo.transferFrom(_communityVault, msg.sender, userReward);
         }
         emit Harvest(msg.sender, epochId, userReward);
         return userReward;
