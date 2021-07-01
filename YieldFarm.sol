@@ -49,7 +49,12 @@ contract YieldFarm {
         address lpTokenAddress,
         address stakeContract,
         address communityVault
-    ) public {
+    ) {
+        require(syloTokenAddress != address(0), "Sylo token address is required");
+        require(lpTokenAddress != address(0), "LP token address is required");
+        require(stakeContract != address(0), "Stake address is required");
+        require(communityVault != address(0), "Community Vault address is required");
+
         _sylo = IERC20(syloTokenAddress);
         _lpTokenAddress = lpTokenAddress;
         _staking = IStaking(stakeContract);
@@ -91,11 +96,12 @@ contract YieldFarm {
         );
 
         if (totalDistributedValue > 0) {
-            _sylo.transferFrom(
+            bool success = _sylo.transferFrom(
                 _communityVault,
                 msg.sender,
                 totalDistributedValue
             );
+            require(success, "Failed to transfer mass harvest reward");
         }
 
         return totalDistributedValue;
@@ -111,7 +117,8 @@ contract YieldFarm {
         );
         uint256 userReward = _harvest(epochId);
         if (userReward > 0) {
-            _sylo.transferFrom(_communityVault, msg.sender, userReward);
+            bool success = _sylo.transferFrom(_communityVault, msg.sender, userReward);
+            require(success, "Failed to transfer harvest reward");
         }
         emit Harvest(msg.sender, epochId, userReward);
         return userReward;
