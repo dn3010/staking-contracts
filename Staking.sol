@@ -54,7 +54,7 @@ contract Staking is ReentrancyGuard {
     /*
      * Stores `amount` of `tokenAddress` tokens for the `user` into the vault
      */
-    function deposit(address tokenAddress, uint256 amount) external nonReentrant {
+    function deposit(address tokenAddress, uint256 amount) public nonReentrant {
         require(amount > 0, "Staking: Amount must be > 0");
 
         IERC20 token = IERC20(tokenAddress);
@@ -63,8 +63,7 @@ contract Staking is ReentrancyGuard {
 
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].add(amount);
 
-        bool success = token.transferFrom(msg.sender, address(this), amount);
-        require(success, "Failed to transfer deposit");
+        token.transferFrom(msg.sender, address(this), amount);
 
         // epoch logic
         uint128 currentEpoch = getCurrentEpoch();
@@ -146,14 +145,13 @@ contract Staking is ReentrancyGuard {
     /*
      * Removes the deposit of the user and sends the amount of `tokenAddress` back to the `user`
      */
-    function withdraw(address tokenAddress, uint256 amount) external nonReentrant {
+    function withdraw(address tokenAddress, uint256 amount) public nonReentrant {
         require(balances[msg.sender][tokenAddress] >= amount, "Staking: balance too small");
 
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].sub(amount);
 
         IERC20 token = IERC20(tokenAddress);
-        bool success = token.transfer(msg.sender, amount);
-        require(success, "Failed to transfer withdrawl");
+        token.transfer(msg.sender, amount);
 
         // epoch logic
         uint128 currentEpoch = getCurrentEpoch();
@@ -256,7 +254,7 @@ contract Staking is ReentrancyGuard {
         emit ManualEpochInit(msg.sender, epochId, tokens);
     }
 
-    function emergencyWithdraw(address tokenAddress) external {
+    function emergencyWithdraw(address tokenAddress) public {
         require((getCurrentEpoch() - lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
@@ -265,8 +263,7 @@ contract Staking is ReentrancyGuard {
         balances[msg.sender][tokenAddress] = 0;
 
         IERC20 token = IERC20(tokenAddress);
-        bool success = token.transfer(msg.sender, totalUserBalance);
-        require(success, "Emergency withdraw transfer failed");
+        token.transfer(msg.sender, totalUserBalance);
 
         emit EmergencyWithdraw(msg.sender, tokenAddress, totalUserBalance);
     }
@@ -308,7 +305,7 @@ contract Staking is ReentrancyGuard {
     /*
      * Returns the amount of `token` that the `user` has currently staked
      */
-    function balanceOf(address user, address token) external view returns (uint256) {
+    function balanceOf(address user, address token) public view returns (uint256) {
         return balances[user][token];
     }
 
@@ -326,7 +323,7 @@ contract Staking is ReentrancyGuard {
     /*
      * Returns the total amount of `tokenAddress` that was locked from beginning to end of epoch identified by `epochId`
      */
-    function getEpochPoolSize(address tokenAddress, uint128 epochId) external view returns (uint256) {
+    function getEpochPoolSize(address tokenAddress, uint128 epochId) public view returns (uint256) {
         // Premises:
         // 1. it's impossible to have gaps of uninitialized epochs
         // - any deposit or withdraw initialize the current epoch which requires the previous one to be initialized
