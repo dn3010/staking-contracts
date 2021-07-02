@@ -106,7 +106,9 @@ contract Staking is ReentrancyGuard {
                     currentMultiplier
                 );
                 checkpoints.push(Checkpoint(currentEpoch, multiplier, getCheckpointBalance(checkpoints[last]), amount));
-                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+
+                uint256 balance = balances[msg.sender][tokenAddress];
+                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balance, 0));
             }
             // the last action happened in the previous epoch
             else if (checkpoints[last].epochId == currentEpoch) {
